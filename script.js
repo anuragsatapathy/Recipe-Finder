@@ -52,16 +52,21 @@ function displayRecipes(recipes) {
     showMessage("No recipes to display");
     return;
   }
+
   recipes.forEach((recipe) => {
+    if (!recipe || !recipe.strMeal || !recipe.idMeal) return;
+
     const recipeDiv = document.createElement("div");
     recipeDiv.classList.add("recipe-item");
     recipeDiv.dataset.id = recipe.idMeal;
+
     const isFav = favorites.includes(recipe.idMeal);
     recipeDiv.innerHTML = `
         <img src="${recipe.strMealThumb}" alt="${recipe.strMeal}" loading="lazy">
         <h3>${recipe.strMeal}</h3>
         <button class="fav-btn">${isFav ? "Remove from Favorites ❤️" : "Add to Favorites 🤍"}</button>
     `;
+
     resultsGrid.appendChild(recipeDiv);
   });
 }
@@ -162,15 +167,12 @@ function displayRecipeDetails(recipe) {
 
 window.addEventListener("DOMContentLoaded", () => {
   if (favorites.length > 0) {
-    const favoriteMeals = [];
     favorites.forEach(async (id) => {
       try {
         const response = await fetch(`${LOOKUP_API_URL}${id}`);
         if (!response.ok) throw new Error("Failed to fetch favorite");
         const data = await response.json();
-        if (data.meals && data.meals.length > 0) {
-          displayRecipes([data.meals[0]]);
-        }
+        if (data.meals && data.meals.length > 0) displayRecipes([data.meals[0]]);
       } catch (error) {
         console.log("Error loading favorite:", error);
       }
