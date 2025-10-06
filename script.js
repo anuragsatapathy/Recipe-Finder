@@ -33,8 +33,10 @@ async function searchRecipes(query) {
     clearMessage();
     if (data.meals) {
       displayRecipes(data.meals, false);
+      renderFavorites();
     } else {
       showMessage(`No recipes found for "${query}"`);
+      renderFavorites();
     }
   } catch (error) {
     showMessage("Something went wrong, Please try again.", true);
@@ -56,6 +58,7 @@ function clearMessage() {
 function displayRecipes(recipes, isFavorite = false) {
   if (!recipes || recipes.length === 0) return;
   recipes.forEach((recipe) => {
+    if (!recipe || !recipe.idMeal || !recipe.strMeal) return;
     const recipeDiv = document.createElement("div");
     recipeDiv.classList.add("recipe-item");
     recipeDiv.dataset.id = recipe.idMeal;
@@ -86,9 +89,11 @@ async function getRandomRecipe() {
       renderFavorites();
     } else {
       showMessage("Could not fetch a random recipe. Please try again.", true);
+      renderFavorites();
     }
   } catch (error) {
     showMessage("Failed to fetch a random recipe. Please try again.", true);
+    renderFavorites();
   }
 }
 
@@ -176,11 +181,14 @@ async function renderFavorites() {
     try {
       const response = await fetch(`${LOOKUP_API_URL}${id}`);
       const data = await response.json();
-      if (data.meals) displayRecipes([data.meals[0]], true);
-    } catch (e) {}
+      if (data.meals && data.meals.length > 0) {
+        displayRecipes([data.meals[0]], true);
+      }
+    } catch (error) {}
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   renderFavorites();
 });
+
